@@ -1,0 +1,139 @@
+<% include ./partials/header.ejs %>
+  <div class="w-full min-h-screen bg-zinc-900 text-white py-5">
+    <div class="w-full px-4 flex items-center justify-between">
+      <img class="w-1/4" src="/images/logo.png" alt="">
+      <div class="icons -mt-2 flex gap-5 items-center">
+        <i class="text-[1.4rem] ri-heart-3-line"></i>
+        <i class="text-[1.4rem] ri-messenger-line"></i>
+      </div>
+    </div>
+    <div class="story px-3 flex gap-3 overflow-auto mt-5">
+      <div class="circle flex-shrink-0">
+        <% if(user.stories.length == 0){ %>
+        <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full relative flex items-center justify-center">
+        <% } else{%>  
+        <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full relative bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+        <% } %>
+          <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden ">
+            <img class="w-full h-full object-cover"
+              src="/images/uploads/<%= user.profileImage %>" alt="">
+              <i class="ri-add-fill bg-blue-500 text-[2vh] rounded-[100%] text-white absolute bottom-0 right-1"></i>
+          </div>
+        </div>
+      </div>
+      <% if(story.forEach(function(elem){ %>
+        <% if(user.following.indexOf(elem.user._id) == -1) {%>
+          <% return %>
+          <% }else{ %>
+
+            <div class="storyuser circle flex-shrink-0">
+              <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+                <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden">
+                  <img class="w-full h-full object-cover"
+                    src="/images/uploads/<%= elem.user.profileImage %>"
+                    alt="">
+                </div>
+              </div>
+            </div>
+
+            <% } %>
+        <% })) %>
+      
+    </div>
+    <div class=" posts parent mb-20">
+      <% posts.reverse().forEach(function(post){ %>
+        <div class="post mt-10 w-full min-h-[50vh]">
+          <div class="title px-4 flex items-center gap-2">
+            <div class="w-[8vw] h-[8vw] bg-sky-100 rounded-full overflow-hidden">
+              <img class="w-full h-full object-cover" src="/images/uploads/<%=post.user.profileImage%>" alt="">
+            </div>
+            <h4 class="text-sm"><%=post.user.username%></h4>
+            <h6 class="text-xs opacity-30"><%= dater(new Date(post.date)) %></h6>
+          </div>
+          <div class=" w-full h-96 mt-4 bg-sky-100 overflow-hidden relative">
+            <img data-postid="<%= post.id %>" class=" postImg w-full h-full object-cover" src="/images/uploads/<%=post.picture%>" alt="">
+          </div>
+          <div class="options w-full px-4 flex justify-between items-center text-[1.4rem]">
+            <div class="flex gap-3 mt-2">
+              <% if(post.likes.indexOf(user._id)=== -1){ %>
+                <i class="heart ri-heart-3-line"></i>
+                <% }else{ %>
+                  <i class="heart ri-heart-3-fill text-red-600"></i>
+                <% } %>
+
+              <i class="ri-chat-3-line"></i>
+              <i class="ri-share-circle-line"></i>
+            </div>
+
+            <i class="saved ri-bookmark-line"></i>
+          </div>
+          <h3 class="likecount px-4 mt-2 text-sm leading-none tracking-tight"><%=post.likes.length%> likes</h3>
+          <h2 class="text-white font-light text-sm mt-2"><span class="font-semibold pl-4 pr-2"><%=user.username%></span><%=post.caption%></h2>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+
+    // ------------------------------------------------------story --------------
+    
+
+
+
+    document.querySelector(".parent")
+    .addEventListener("click", function(dets){
+      
+      if(dets.target.classList.contains("postImg")){
+        var postparent =  dets.target.parentNode.parentNode
+        var khalidil = postparent.querySelector(".heart")
+        if(khalidil.classList.contains("ri-heart-3-line")){
+          khalidil.classList.remove("ri-heart-3-line")
+          khalidil.classList.add("ri-heart-fill","text-red-600")
+
+          var icon = document.createElement("i")
+        icon.classList.add("ri-heart-3-fill")
+        icon.classList.add("text-white-200","text-8xl","drop-shadow-lg"	,"absolute","top-1/2","left-1/2","-translate-x-[50%]","-translate-y-[50%]","z-[90]")
+        dets.target.parentNode.appendChild(icon)
+
+        gsap.from(icon,{
+          scale: 0,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power4.out",
+          y: 20
+        })
+        gsap.to(icon,{
+          scale: 0,
+          opacity: 0,
+          delay: 0.6,
+          duration: 0.4,
+          ease: "power4.out",
+          y: -20,
+          onComplete:function(){dets.target.parentNode.removeChild(icon);},
+        })
+
+        }else{
+          khalidil.classList.remove("ri-heart-fill","text-red-600")
+          khalidil.classList.add("ri-heart-3-line")
+        }        
+        
+        fetch(`/like/${dets.target.dataset.postid}`)
+        .then(raw => raw.json())
+        .then(response => {
+          postparent.querySelector(".likecount").textContent = response.likes.length + " likes";
+        })
+              
+      }
+        
+    
+      //saved post
+      if(dets.target.classList.contains("saved")){
+        // fetch(`/saved/${dets.target.dataset.postid}`)
+        console.log(dets.target.parentNode);
+      }
+    
+    });
+
+  </script>
+  <% include ./partials/footer.ejs %>
