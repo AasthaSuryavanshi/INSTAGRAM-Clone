@@ -40,8 +40,32 @@ router.get('/feed',isLoggedIn,async function(req, res) {
   
 
   // const newposts = posts.map((post) => ({...post, date: utils.formatRelativeTime(new Date(post.date))}));
-  res.render('feed', {footer: true, posts,user, story,dater: utils.formatRelativeTime});
+  res.render('feed', {footer: true, posts,user, story,dater:utils.formatRelativeTime});
 });
+
+// --------------story route--------
+router.get('/story/:userId',async (req, res) => {
+  const user = await userModel.findOne({_id:req.params.userId}).populate('stories')
+
+  res.json(user);
+
+})
+router.get('/storylike/:storyUserId',async (req, res) => {
+  const user = await userModel.findOne({username: req.session.passport.user})
+  const story = await storyModel.findOne({_id:req.params.storyUserId}).populate("likes")
+  if (story.likes.indexOf(user._id) == -1) {
+    story.likes.push(user._id);
+  } else {
+    return
+    
+  }
+  await story.save()
+  
+
+  res.json(story);
+
+})
+
 
 router.get('/profile',isLoggedIn,async function(req, res) {
   const user = await userModel.findOne({username: req.session.passport.user}).populate("posts");  

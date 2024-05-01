@@ -7,7 +7,7 @@
         <i class="text-[1.4rem] ri-messenger-line"></i>
       </div>
     </div>
-    <div class="story px-3 flex gap-3 overflow-auto mt-5">
+    <div class="storyshow story px-3 flex gap-3 overflow-auto mt-5">
       <div class="circle flex-shrink-0">
         <% if(user.stories.length == 0){ %>
         <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full relative flex items-center justify-center">
@@ -15,29 +15,33 @@
         <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full relative bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
         <% } %>
           <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden ">
-            <img class="w-full h-full object-cover"
+            <img id="<%= user._id %>" class="w-full h-full object-cover"
               src="/images/uploads/<%= user.profileImage %>" alt="">
               <i class="ri-add-fill bg-blue-500 text-[2vh] rounded-[100%] text-white absolute bottom-0 right-1"></i>
           </div>
         </div>
       </div>
-      <% if(story.forEach(function(elem){ %>
-        <% if(user.following.indexOf(elem.user._id) == -1) {%>
-          <% return %>
-          <% }else{ %>
-
-            <div class="storyuser circle flex-shrink-0">
-              <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
-                <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden">
-                  <img class="w-full h-full object-cover"
-                    src="/images/uploads/<%= elem.user.profileImage %>"
-                    alt="">
+      <% var uniqueUserIds = [] %>
+      <% story.forEach(function(elem){ %>
+        <% if(!uniqueUserIds.includes(elem.user._id)){ %>
+          <% if(user.following.indexOf(elem.user._id) === -1){ %>
+            <% return %>
+            <% }else{ %>
+              
+              <div class="storyuser circle flex-shrink-0">
+                <div class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+                  <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden">
+                    <img id="<%= elem.user._id %>" class="w-full h-full object-cover"
+                      src="/images/uploads/<%= elem.user.profileImage %>"
+                      alt="">
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <% } %>
-        <% })) %>
+  
+              <% } %>
+        <% uniqueUserIds.push(elem.user._id); %>
+        <% }else{return} %>
+        <% }) %>
       
     </div>
     <div class=" posts parent mb-20">
@@ -72,12 +76,165 @@
         </div>
       <% }) %>
     </div>
+
+    <!-- ----------------------------------------------overlay of story------------------ -->
+
+    <div class="story-container w-[100vw] h-[100vh] hidden z-30 absolute top-0 left-0">
+      <div class="w-full h-2 bg-gray-300/40 rounded-full overflow-hidden top-0 z-50 left-0 absolute">
+        <div id="progress" class="h-[2vh] bg-gradient-to-r from-purple-700 to-orange-500 transition-all ease-linear "></div>
+      </div>
+      <img class="storyimage w-full h-[95vh] object-cover bg-red-900" src="" alt="">
+      <div class="story-nav mt-2 absolute top-0 left-0 w-full h-[10vh]  flex items-center justify-start p-6 ">
+        <div class="image-con w-[60px] h-[60px] rounded-full border-4 border-white bg-white overflow-hidden">
+          <img class=" storydp w-full h-full object-cover " src="" alt="">
+        </div>
+        <h3 class=" storyusername ml-2 text-[18px] font-bold text-white">nMaaaa</h3>
+        <h3 class="storytime ml-3 text-[18px]  font-thin text-white">0s</h3>
+
+      </div>
+      <div class="bottom-nav px-[15px] w-full h-[7vh] absolute left-0 bottom-[6vh]">
+        <i class="storylike absolute bottom-3  left-3 z-40 ri-service-fill text-[30px] text-red-600 rounded-full p-1 bg-red-200/50"></i>
+      </div>
+    </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
 
+ function formatRelativeTime(date) {
+        const now = new Date();
+        const diff = now - date;
+      
+        // Convert milliseconds to seconds
+        const seconds = Math.floor(diff / 1000);
+      
+        if (seconds < 60) {
+          return `${seconds}s`;
+        }
+      
+        const minutes = Math.floor(seconds / 60);
+      
+        if (minutes < 60) {
+          return `${minutes}m`;
+        }
+      
+        const hours = Math.floor(minutes / 60);
+      
+        if (hours < 24) {
+          return `${hours}h`;
+        }
+      
+        const days = Math.floor(hours / 24);
+      
+        if (days < 7) {
+          return `${days}d`;
+        }
+      
+        const weeks = Math.floor(days / 7);
+
+        if (weeks < 4) {
+          return `${weeks}w`;
+        }
+
+        const months = Math.floor(weeks / 4);
+
+        if (months < 12) {
+          return `${months}m`;
+        }
+        
+        const years = Math.floor(months / 12);
+      
+        return `${years}y`;
+      }
+
     // ------------------------------------------------------story --------------
-    
+   function displayStory() {  
+     
+    document.querySelector(".storyshow").addEventListener("click", function(dets){
+      var data = dets.target.id; 
+      fetch(`/story/${dets.target.id}`)
+      .then(raw => raw.json())
+      .then(userModel => {
+            const stories = userModel.stories;
+
+            // Function to display a story
+            async function displayNextStory(index) {
+                const currentStory = stories[index];
+
+                // Display user information
+                document.querySelector(".storyusername").innerHTML = userModel.username;
+                document.querySelector(".storydp").setAttribute('src', `/images/uploads/${userModel.profileImage}`);
+
+                // Display current story information
+                await document.querySelector(".storyimage").setAttribute('src', `/images/uploads/${currentStory.picture}`);
+                document.querySelector(".storylike").id = currentStory._id;
+        
+                document.querySelector(".story-container").style.display = "initial";
+                document.querySelector('.storytime').innerHTML = `${formatRelativeTime(new Date(currentStory.date))}`; 
+                document.querySelector(".story-container").addEventListener("click", function(){
+                  document.querySelector(".story-container").style.display="none";
+                });
+                progress();
+
+
+                // Hide story container after 5 seconds
+                setTimeout(async function() {
+                    document.querySelector(".story-container").style.display = "none";
+                    // Display next story if available
+                    if (index + 1 < stories.length) {
+                        await displayNextStory(index + 1);
+                    }
+                }, 3000);
+
+                progress(index);
+                document.querySelector(".story-container").addEventListener("click", function(){
+                  index = stories.length; 
+                });
+            }
+
+            // Start displaying stories
+            displayNextStory(0);
+
+        })
+        .catch(error => {
+            console.error("Error fetching story:", error);
+        });
+});
+  
+}displayStory()
+
+      // Simulate progress
+    function progress() {
+    let progress = 0;
+    const progressBar = document.getElementById('progress');
+    const interval = setInterval(() => {
+        progress += 2;
+        progressBar.style.width = `${progress}%`;
+        if (progress >= 99) {
+            clearInterval(interval);
+        }
+    }, 50);
+}
+    // ----------------------------------------------------------
+// story ke like walla-----------------------------------------------
+
+
+  document.querySelector(".storylike").addEventListener("click",function(dets){
+    // console.log(dets.target.id);
+    fetch(`/storylike/${dets.target.id}`)
+    .then(raw => raw.json())
+    .then(response =>{
+      console.log(response.likes);
+      console.log(response.likes.forEach(element => {
+        console.log(element.username);
+      }));
+    })
+  })
+
+
+
+
+// ------------------------------------------------------------------
+
 
 
 
