@@ -1,13 +1,19 @@
 <% include ./partials/header.ejs %>
-  <div class="w-full min-h-screen bg-zinc-900 text-white py-5">
+  <div class="w-full h-[100vh] bg-zinc-900 text-white py-5 overflow-hidden">
       <div class="nav flex justify-between items-center px-4">
         <h3 class="text-lg"><%= user.username %></h3>
         <div class="icons flex gap-5">
           <a href="/upload"><i class="text-[1.4rem] ri-add-box-line"></i></a>
-          <i class="text-[1.4rem] ri-menu-line"></i>
+          <i class="menu text-[1.4rem] ri-menu-line"></i>
+        </div>
+        <div class="menudiv w-[25vw] h-[12vh]  bg-zinc-800 rounded-lg border-[0.5px] border-zinc-300 
+          absolute top-[7vh] right-[0.5vh] flex items-center justify-center flex-col overflow-hidden translate-x-[15vh]">
+        
+          <a href="/logout" class="text-[2vh]  text-center w-full  border-b-[0.5px] border-zinc-400 py-3">Logout</a>
+          <a href="/saveposts" class="text-[2vh] text-center py-3">Saved</a>
         </div>
       </div>
-      <div class="flex justify-between items-center pl-6 pr-[12vw] mt-8">
+      <div class=" flex justify-between items-center pl-6 pr-[12vw] mt-8">
         <div class="w-[19vw] h-[19vw] bg-sky-100 rounded-full overflow-hidden">
           <img class="w-full h-full object-cover" src="/images/uploads/<%= user.profileImage %>" alt="">
         </div>
@@ -41,7 +47,7 @@
         </div> 
         <% }else{ %>
           <% user.posts.reverse().forEach(function(post){ %>
-            <div class="post w-[32.5%] h-32 bg-sky-100">
+            <div class="post w-[32.5%] h-32 bg-sky-900">
               <img class="w-full h-full object-cover" src="/images/uploads/<%= post.picture%>" alt="">
             </div>
            <% }) %>
@@ -49,4 +55,20 @@
         
       </div>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    document.querySelector(".menu").addEventListener("click", function(){
+      var menudiv = document.querySelector(".menudiv")
+      gsap.to(menudiv,{
+        x:-10,
+        duration:0.4,      
+      })
+      menudiv.addEventListener("click", function(){
+        gsap.to(menudiv,{
+          x:110,
+          duration:0.4, 
+        })
+    })
+    });
+  </script>
 <% include ./partials/footer.ejs %>

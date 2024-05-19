@@ -12,7 +12,7 @@ const userSchema = mongoose.Schema({
   profileImage:String,
   saved:[{
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user"}],
+    ref: "post"}],
   posts:[{type: mongoose.Schema.Types.ObjectId, ref: "post"}],
   followers:[{type: mongoose.Schema.Types.ObjectId, ref: "user"}],
   following:[{type: mongoose.Schema.Types.ObjectId, ref: "user"}],

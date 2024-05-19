@@ -69,7 +69,13 @@
               <i class="ri-share-circle-line"></i>
             </div>
 
-            <i class="saved ri-bookmark-line"></i>
+            <% if(user.saved.indexOf(post.id) === -1){ %>
+
+              <i id="<%= post.id %>" class="saved ri-bookmark-line"></i>
+              <% }else{ %>
+                <i id="<%= post.id %>" class="saved ri-bookmark-fill"></i>
+
+              <%  } %>
           </div>
           <h3 class="likecount px-4 mt-2 text-sm leading-none tracking-tight"><%=post.likes.length%> likes</h3>
           <h2 class="text-white font-light text-sm mt-2"><span class="font-semibold pl-4 pr-2"><%=user.username%></span><%=post.caption%></h2>
@@ -92,13 +98,40 @@
         <h3 class="storytime ml-3 text-[18px]  font-thin text-white">0s</h3>
 
       </div>
-      <div class="bottom-nav px-[15px] w-full h-[7vh] absolute left-0 bottom-[6vh]">
-        <i class="storylike absolute bottom-3  left-3 z-40 ri-service-fill text-[30px] text-red-600 rounded-full p-1 bg-red-200/50"></i>
+      <div class="dildiv bottom-nav px-[15px] w-full h-[7vh] absolute left-0 bottom-[6vh]">
+        <i  class="storylike absolute bottom-3  left-3 z-40 ri-service-fill text-[30px] text-zinc-900 border-2 border-white  rounded-full p-1 bg-zinc-100/50"></i>
       </div>
     </div>
   </div>
+
+
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
+
+    // ------------------------------------------------------SAVED--------------
+    document.querySelector('.posts').addEventListener('click', function(e){
+
+      console.log(e.target.id)
+      if (e.target.classList.contains('saved')) {
+        if (e.target.classList.contains('ri-bookmark-line')) {
+          
+          e.target.classList.remove('ri-bookmark-line');
+          e.target.classList.add('ri-bookmark-fill','text-white');
+        }
+        else{
+          e.target.classList.add('ri-bookmark-line');
+            e.target.classList.remove('ri-bookmark-fill','text-white');
+        }
+        
+        fetch(`/saveposts/${e.target.id}`)
+        .then(raw => raw.json())
+        .then(responce => {
+          console.log(responce);
+        })
+      }
+    });
 
  function formatRelativeTime(date) {
         const now = new Date();
@@ -163,15 +196,29 @@
                 // Display user information
                 document.querySelector(".storyusername").innerHTML = userModel.username;
                 document.querySelector(".storydp").setAttribute('src', `/images/uploads/${userModel.profileImage}`);
+                if (currentStory.likes.includes("<%= user._id %>") ){
+                document.querySelector(".storylike").classList.remove("ri-service-fill")
+                document.querySelector(".storylike").classList.add("ri-heart-fill")
+                }else{
+                document.querySelector(".storylike").classList.add("ri-service-fill")
+                document.querySelector(".storylike").classList.remove("ri-heart-fill")
+                }
+                // console.log("<%= user.username%>");
+
+
 
                 // Display current story information
                 await document.querySelector(".storyimage").setAttribute('src', `/images/uploads/${currentStory.picture}`);
-                document.querySelector(".storylike").id = currentStory._id;
-        
+                document.querySelector(".storylike").id = currentStory._id;        
                 document.querySelector(".story-container").style.display = "initial";
                 document.querySelector('.storytime').innerHTML = `${formatRelativeTime(new Date(currentStory.date))}`; 
-                document.querySelector(".story-container").addEventListener("click", function(){
+                document.querySelector(".story-container").addEventListener("click", function(dets){
+                  if(dets.target.classList.contains('storylike')){
+                  console.log("true");
+                }else{
                   document.querySelector(".story-container").style.display="none";
+
+                }
                 });
                 progress();
 
@@ -223,26 +270,59 @@
     fetch(`/storylike/${dets.target.id}`)
     .then(raw => raw.json())
     .then(response =>{
-      console.log(response.likes);
-      console.log(response.likes.forEach(element => {
+      console.log(dets.target);
+      if (dets.target.classList.contains("ri-service-fill")) {
+        dets.target.classList.remove("ri-service-fill","text-zinc-900")
+        dets.target.classList.add("ri-heart-fill","text-red-600")
+
+        
+        var icon = document.createElement("i")
+        icon.classList.add("ri-heart-3-fill")
+        icon.classList.add("text-white-200","text-8xl","drop-shadow-lg"	,"absolute","top-1/2","left-1/2","-translate-x-[50%]","-translate-y-[50%]","z-[90]")
+        dets.target.parentNode.parentNode.appendChild(icon)
+
+
+      gsap.from(icon,{
+          scale: 0,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power4.out",
+          y: 20
+        })
+        gsap.to(icon,{
+          scale: 0,
+          opacity: 0,
+          delay: 0.6,
+          duration: 0.4,
+          ease: "power4.out",
+          y: -20,
+          onComplete:function(){dets.target.parentNode.removeChild(icon);},
+        })
+        
+      } else {
+        dets.target.classList.add("ri-service-fill","text-zinc-900")
+        dets.target.classList.remove("ri-heart-fill")
+      }
+
+      
+      
+      response.likes.forEach(element => {
         console.log(element.username);
-      }));
+      });
     })
   })
+  
 
 
 
 
-// ------------------------------------------------------------------
-
-
-
+// -----------------------------------------------------------------------------
 
     document.querySelector(".parent")
     .addEventListener("click", function(dets){
       
       if(dets.target.classList.contains("postImg")){
-        var postparent =  dets.target.parentNode.parentNode
+        var postparent = dets.target.parentNode.parentNode
         var khalidil = postparent.querySelector(".heart")
         if(khalidil.classList.contains("ri-heart-3-line")){
           khalidil.classList.remove("ri-heart-3-line")
@@ -284,11 +364,7 @@
       }
         
     
-      //saved post
-      if(dets.target.classList.contains("saved")){
-        // fetch(`/saved/${dets.target.dataset.postid}`)
-        console.log(dets.target.parentNode);
-      }
+      
     
     });
 

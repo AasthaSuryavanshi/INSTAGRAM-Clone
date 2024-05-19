@@ -18,6 +18,9 @@ router.get('/', function(req, res) {
 router.get('/login', function(req, res) {
   res.render('login', {footer: false});
 });
+router.get('/storydisplay', function(req, res) {
+  res.render('story', {footer: false});
+});
 
 router.get('/like/:postid',async function(req, res) {
   const post =await postModel.findOne({_id: req.params.postid});
@@ -31,6 +34,33 @@ router.get('/like/:postid',async function(req, res) {
   res.json(post);
 });
 
+
+router.get('/saveposts/:savepostid',isLoggedIn,async function(req, res) {
+  const user = await userModel.findOne({username: req.session.passport.user});
+  if(user.saved.includes(req.params.savepostid)){
+    user.saved.splice(user.saved.indexOf(req.params.savepostid), 1);
+  }
+  else{
+    user.saved.push(req.params.savepostid)
+  }
+    await user.save();
+  res.json(user)
+});
+
+router.get('/saveposts',isLoggedIn,async function(req, res) {
+  const user = await userModel.findOne({username: req.session.passport.user}).populate('saved');
+  const post = await user.saved.map((i) => {
+    return i.user
+  })
+  const alluser = post.forEach(async element => {
+    
+    await userModel.findOne({_id:element})
+  })
+  console.log(alluser);
+  console.log(post);
+  // console.log(user);
+  res.render('saved.ejs',{footer:true, user})
+})
 
 
 router.get('/feed',isLoggedIn,async function(req, res) {
@@ -52,17 +82,17 @@ router.get('/story/:userId',async (req, res) => {
 })
 router.get('/storylike/:storyUserId',async (req, res) => {
   const user = await userModel.findOne({username: req.session.passport.user})
-  const story = await storyModel.findOne({_id:req.params.storyUserId}).populate("likes")
-  if (story.likes.indexOf(user._id) == -1) {
+  const story = await storyModel.findOne({_id:req.params.storyUserId})
+  if (story.likes.indexOf(user._id) === -1) {
     story.likes.push(user._id);
   } else {
-    return
-    
+      story.likes.splice(story.likes.indexOf(user._id), 1)
   }
-  await story.save()
-  
+  await story.save() 
+  const Completestory = await storyModel.findOne({_id:req.params.storyUserId}).populate("likes")
 
-  res.json(story);
+
+  res.json(Completestory);
 
 })
 
@@ -114,13 +144,13 @@ router.post('/register', function(req, res, next){
       userModel.register(userData, req.body.password)
       .then(function(registereduser){
         passport.authenticate("local")(req,res,function(){
-          res.redirect('/profile');
+          res.redirect('/feed');
         })
       })
 })
 
 router.post('/login', passport.authenticate("local",{
-  successRedirect:"/profile",
+  successRedirect:"/feed",
   failureRedirect:"/login",
 }), function(req, res){});
 

@@ -1,0 +1,32 @@
+<% include ./partials/header.ejs %>
+<div class="w-full bg-zinc-900 py-4 px-4 flex items-center justify-between">
+    <img class="w-1/4" src="/images/logo.png" alt="">
+    <div class="icons -mt-2 flex gap-5 items-center">
+      <i class="text-[1.4rem] ri-heart-3-line text-white"></i>
+      <i class="text-[1.4rem] ri-messenger-line text-white"></i>
+    </div>
+  </div>
+<div class="w-[100vw] h-[90vh] bg-zinc-900 grid grid-cols-2 py-5 px-6 gap-5 overflow-y-auto">
+
+    <% user.saved.forEach(function(post){ %>
+
+        
+        <div class="saved w-[40vw] h-[28vh] rounded-[15px] bg-slate-500 flex-shrink-0 overflow-hidden  ">
+            <div class="w-full h-[6vh] bg-white p-2 flex items-center justify-start gap-1">
+                <div class="w-9 h-9 rounded-full bg-slate-300">
+                    <img class="w-full h-full object-cover" src="/images/uploads/<%= post.user.profileImage %>" alt="">
+                </div>
+                <h3><%= post.user.username %></h3>
+            </div>
+            <div class="w-full h-full bg-cyan-300">
+                <img class="w-full h-full object-cover" src="/images/uploads/<%= post.picture %>" alt="">
+            </div>
+        </div>
+        
+        <% }) %>
+</div>
+
+
+
+
+<% include ./partials/footer.ejs %>
